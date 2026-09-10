@@ -22,6 +22,7 @@ module HOI4.Types (
     ,   HOI4CountryLeaderTrait (..)
     ,   HOI4UnitLeaderTrait (..)
     ,   HOI4BopRange (..)
+    ,   HOI4Technology (..)
         -- * Low level types
     ,   HOI4Scope (..)
     ,   AIWillDo (..)
@@ -81,6 +82,10 @@ data HOI4Data = HOI4Data {
     ,   hoi4unitleadertraits :: HashMap Text HOI4UnitLeaderTrait
     ,   hoi4terrainScripts :: HashMap FilePath GenericScript
     ,   hoi4terrain :: [Text]
+    ,   hoi4unittagScripts :: HashMap FilePath GenericScript
+    ,   hoi4unittag :: [Text]
+    ,   hoi4unitScripts :: HashMap FilePath GenericScript
+    ,   hoi4unit :: [Text]
     ,   hoi4ideologyScripts :: HashMap FilePath GenericScript
     ,   hoi4ideology :: HashMap Text Text
     ,   hoi4chartoken :: HashMap Text HOI4Advisor
@@ -92,6 +97,8 @@ data HOI4Data = HOI4Data {
     ,   hoi4modifierdefinitions :: HashMap Text (Text -> Double -> ScriptMessage)
     ,   hoi4bopScripts :: HashMap FilePath GenericScript
     ,   hoi4bops :: HashMap Text HOI4BopRange
+    ,   hoi4techScripts :: HashMap FilePath GenericScript
+    ,   hoi4techs :: HashMap FilePath [HOI4Technology]
     ,   hoi4lockeys :: [Text]
     ,   hoi4modkeys :: [Text]
 
@@ -182,6 +189,14 @@ class (IsGame g,
     getTerrainScripts :: Monad m => PPT g m (HashMap FilePath GenericScript)
     -- | Get the terrain parsed
     getTerrain :: Monad m => PPT g m [Text]
+    -- | Get unittags script
+    getUnitTagScripts :: Monad m => PPT g m (HashMap FilePath GenericScript)
+    -- | Get the unittags parsed
+    getUnitTag :: Monad m => PPT g m [Text]
+    -- | Get unit script
+    getUnitScripts :: Monad m => PPT g m (HashMap FilePath GenericScript)
+    -- | Get the unit parsed
+    getUnit :: Monad m => PPT g m [Text]
     -- | Get leader traits script
     getIdeologyScripts :: Monad m => PPT g m (HashMap FilePath GenericScript)
     -- | Get the leader traits parsed
@@ -204,6 +219,10 @@ class (IsGame g,
     getBopScripts  :: Monad m => PPT g m (HashMap FilePath GenericScript)
     -- | Get the balance of power parsed
     getBops  :: Monad m => PPT g m (HashMap Text HOI4BopRange)
+    -- | Get technologies script
+    getTechnologyScripts  :: Monad m => PPT g m (HashMap FilePath GenericScript)
+    -- | Get the technologies parsed
+    getTechnologies  :: Monad m => PPT g m (HashMap FilePath [HOI4Technology])
     -- | Get the lockeys
     getLocKeys :: Monad m => PPT g m [Text]
     -- | Get the modkeys parsed
@@ -472,6 +491,7 @@ data HOI4NationalFocus = HOI4NationalFocus
     ,   nf_name_desc :: Maybe Text
     ,   nf_text :: Maybe Text
     ,   nf_icon :: Text
+    ,   nf_alt_icon :: Maybe Text
     ,   nf_cost :: Double
     ,   nf_allow_branch  :: Maybe GenericScript
     ,   nf_prerequisite  :: [Maybe GenericScript]
@@ -542,6 +562,7 @@ data HOI4CountryLeaderTrait = HOI4CountryLeaderTrait
     ,   clt_equipment_bonus :: Maybe GenericStatement
     ,   clt_hidden_modifier :: Maybe GenericStatement
     ,   clt_modifier :: Maybe GenericScript
+    ,   clt_cp_cap :: Maybe Text
     } deriving (Show)
 
 data HOI4UnitLeaderTrait = HOI4UnitLeaderTrait
@@ -568,6 +589,29 @@ data HOI4BopRange = HOI4BopRange
     ,   bop_on_deactivate :: Maybe GenericScript
     ,   bop_path :: FilePath
     } deriving (Show)
+
+data HOI4Technology = HOI4Technology
+    {   tech_id :: Text
+    ,   tech_loc :: Text
+    ,   tech_desc :: Maybe Text
+    ,   tech_icon :: Text
+    ,   tech_dependecies :: Maybe [Text]
+    ,   tech_equipment :: Maybe [Text]
+    ,   tech_modules :: Maybe [Text]
+    ,   tech_units :: Maybe [Text]
+    ,   tech_globalmod :: Maybe [GenericStatement] -- ^ global modifiers
+    ,   tech_unitmod :: Maybe [GenericStatement] -- ^ modifiers for units
+    ,   tech_catmod :: Maybe [GenericStatement] -- ^ modifiers for categories
+    ,   tech_buildings :: Maybe [GenericScript]
+    ,   tech_cost :: Double
+    ,   tech_start_year :: Int
+    ,   tech_doctrine :: Bool
+    ,   tech_on_complete_limit :: Maybe GenericScript
+    ,   tech_on_complete :: Maybe GenericScript
+    ,   tech_sortrest :: Maybe [GenericStatement]
+    ,   tech_filepath :: FilePath
+    } deriving (Show)
+
 ------------------------------
 -- Shared lower level types --
 ------------------------------

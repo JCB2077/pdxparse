@@ -234,7 +234,7 @@ data ScriptMessage
     | MsgIf
     | MsgLimit
     | MsgPrioritize {scriptMessageWhat :: Text}
-    | MsgOrignalTagToCheck {scriptMessageWho :: Text}
+    | MsgOriginalTagToCheck {scriptMessageWho :: Text}
     | MsgWhile
     | MsgFor
     | MsgRandom
@@ -407,7 +407,7 @@ data ScriptMessage
     | MsgTransferStateTo {scriptMessageWho :: Text, scriptMessageWhat :: Text}
     | MsgHasWarWith {scriptMessageWhom :: Text, scriptMessageWhat :: Text}
     | MsgHasWarTogetherWith {scriptMessageWhom :: Text, scriptMessageWhat :: Text}
-    | MsgOrignalTag {scriptMessageWhom :: Text, scriptMessageWhat :: Text}
+    | MsgOriginalTag {scriptMessageWhom :: Text, scriptMessageWhat :: Text}
     | MsgMakeWhitePeace {scriptMessageWhom :: Text, scriptMessageWhat :: Text}
     -- flagyesno messages
     | MsgCountryStartResistance {scriptMessageWho :: Text, scriptMessageWhat :: Text}
@@ -1198,7 +1198,7 @@ instance RenderMessage Script ScriptMessage where
                 [ "Prioritizing the "
                 , _what
                 ]
-        MsgOrignalTagToCheck {scriptMessageWho = _who}
+        MsgOriginalTagToCheck {scriptMessageWho = _who}
             -> mconcat
                 [ "originally "
                 , _who
@@ -1310,9 +1310,9 @@ instance RenderMessage Script ScriptMessage where
                 ]
         MsgHasTech {scriptMessageWhat = _what}
             -> mconcat
-                [ "Has "
+                [ "Has researched \""
                 , _what
-                , " technology researched"
+                , "\""
                 ]
         MsgHasTemplate {scriptMessageWhat = _what}
             -> mconcat
@@ -1742,11 +1742,10 @@ instance RenderMessage Script ScriptMessage where
                 ]
         MsgHasArmyManpower {scriptMessageAmt = _amt, scriptMessageCompare = _comp}
             -> mconcat
-                [ "Has "
-                , _comp
+                [ _comp
                 , " "
                 , toMessage (bold (plainNumMin _amt))
-                , " {{icon|manpower|1}} in the field"
+                , " {{icon|manpower|1}} in divisions in the field"
                 ]
         MsgHasArmyManpowerVar {scriptMessageAmtText = _amtT, scriptMessageCompare = _comp}
             -> mconcat
@@ -2383,7 +2382,7 @@ instance RenderMessage Script ScriptMessage where
                 , _whom
                 , ifThenElseT (T.null _what) "" "<!-- ",_what," -->"
                 ]
-        MsgOrignalTag {scriptMessageWhom = _whom, scriptMessageWhat = _what}
+        MsgOriginalTag {scriptMessageWhom = _whom, scriptMessageWhat = _what}
             -> mconcat
                 [ "Original country is "
                 , _whom
@@ -2826,9 +2825,7 @@ instance RenderMessage Script ScriptMessage where
                 , _comp
                 , " "
                 , toMessage (bold (plainNumMin _amt))
-                , " free {{icon|building slot|}} "
-                , plural _amt "building slot" "building slots"
-                , " for "
+                , " free {{icon|building slot|1}} for "
                 , _what
                 , " "
                 , toMessage (ifThenElseT _yn "including locked slots" "")
@@ -3184,13 +3181,13 @@ instance RenderMessage Script ScriptMessage where
             -> mconcat
                 [ _what
                 , ": "
-                , if _amt /= 0 then "{{color|red|Yes}}" else "{{color|green|No}} <!-- This should not appear -->"
+                , if _amt /= 0 then "{{red|Yes}}" else "{{green|No}} <!-- This should not appear -->"
                 ]
         MsgModifierYesNo {scriptMessageWhat = _what, scriptMessageAmt = _amt}
             -> mconcat
                 [ _what
                 , ": "
-                , if _amt /= 0 then "{{color|green|Yes}}" else "{{color|red|No}} <!-- This should not appear -->"
+                , if _amt /= 0 then "{{green|Yes}}" else "{{red|No}} <!-- This should not appear -->"
                 ]
         MsgModifierVar {scriptMessageWhat = _what, scriptMessageAmtText = _amtT}
             -> mconcat
@@ -3295,18 +3292,18 @@ instance RenderMessage Script ScriptMessage where
                 ]
         MsgCreateWG {scriptMessageWhat = _what, scriptMessageWhom = _whom, scriptMessageStates = _state}
             -> mconcat
-                [ "Gets a "
+                [ "Gains a "
                 , toMessage (italicText _what)
-                , " wargoal"
+                , " {{icon|cb|1}}"
                 , _state
                 , " against "
                 , _whom
                 ]
         MsgCreateWGDuration {scriptMessageWhat = _what, scriptMessageWhom = _whom, scriptMessageAmt = _amt, scriptMessageStates = _state}
             -> mconcat
-                [ "Gets a "
+                [ "Gains a "
                 , toMessage (italicText _what)
-                , " wargoal "
+                , " {{icon|cb|1}} "
                 , _state
                 , " against "
                 , _whom
@@ -5030,7 +5027,9 @@ message :: (IsGameData (GameData g), Monad m) => ScriptMessage -> PPT g m Doc
 message msg = Doc.strictText <$> messageText msg
 
 templateColor :: Doc -> Doc
-templateColor td = Doc.strictText (templateColor' td)
+templateColor td = td
+    -- normal for now
+    --Doc.strictText (templateColor' td)
 
 templateColor' :: Doc -> Text
 templateColor' td = rr

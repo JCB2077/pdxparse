@@ -224,7 +224,7 @@ restOfLine = (Ap.many1' Ap.endOfLine >> return "")
 ident :: Parser Text
 ident = do
         res <- (<>) <$> (T.singleton <$> Ap.satisfy (\c -> c `elem` ['@','_','[','\x201C'] || isAlphaNum c))
-                    <*> Ap.takeWhile (\c -> c `elem` ['_','.','@','-','?','^','/','\'','[',']','\x201D'] || isAlphaNum c)
+                    <*> Ap.takeWhile (\c -> c `elem` ['_','.','@','-','?','^','/','\'','[',']','|','\x201D'] || isAlphaNum c)
         if T.all isDigit res
             then fail "ident: numeric identifier"
             else return res
@@ -259,7 +259,7 @@ floatLit :: Parser Double
 floatLit = Ap.signed (do
     d <- Ap.option 0 Ap.decimal
     Ap.char '.'
-    res <- many Ap.digit
+    res <- Ap.many1 Ap.digit
     let decimal :: Double = read $ "0." <> res
     pure $ fromIntegral d + decimal)
     <* (do
