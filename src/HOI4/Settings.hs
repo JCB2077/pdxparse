@@ -559,8 +559,8 @@ writeHOI4Scripts = do
 --        writeHOI4DecisionCats
 --        liftIO $ putStrLn "Writing decisions."
 --        writeHOI4Decisions
---        liftIO $ putStrLn "Writing national focuses."
---        writeHOI4NationalFocuses
+        liftIO $ putStrLn "Writing national focuses."
+        writeHOI4NationalFocuses
         liftIO $ putStrLn "Writing technologies."
         writeHOI4Technologies
 --        liftIO $ putStrLn "Writing opinion modifiers."
