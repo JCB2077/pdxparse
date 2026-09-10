@@ -1,0 +1,63 @@
+== Problem ==
+'''pdxparse''' emits inline icons as <code><nowiki>{{icon|<code>}}</nowiki></code>
+— a positional ''icon code'' that the template maps to a file name, e.g.
+<code><nowiki>{{icon|time}}</nowiki></code>, <code><nowiki>{{icon|opinion}}</nowiki></code>,
+<code><nowiki>{{icon|political power}}</nowiki></code>. There are roughly 280
+such call sites across the parser, so this is the single most load-bearing
+template in the output.
+
+Old World Blues and Equestria at War both carry the Paradox-wiki style
+<code>Icon</code> and need no change.
+
+The Nation of Nations wiki's <code>Template:Icon</code> is a different template
+with the same name. It renders:
+
+<pre>
+[[File:{{{iconfile}}}|22px]]
+</pre>
+
+It takes a ''named'' <code>iconfile</code> parameter and ignores positional
+input, so every <code><nowiki>{{icon|time}}</nowiki></code> in pdxparse output
+expands to <code><nowiki>[[File:|22px]]</nowiki></code> and renders as nothing
+or as a broken file link.
+
+== Fix ==
+Do '''not''' replace the existing template — existing pages call it with
+<code>iconfile=</code> and would break. Instead make it accept both forms, by
+falling through to a code lookup only when <code>iconfile</code> is absent:
+
+<pre>
+&lt;includeonly&gt;{{#if:{{{iconfile|}}}
+ | [[File:{{{iconfile}}}|{{{width|22px}}}|link=]]
+ | {{#switch: {{lc:{{{1|}}}}}
+   | time              = [[File:Time.png|{{{width|22px}}}|link=]]
+   | political power   = [[File:Political power.png|{{{width|22px}}}|link=]]
+   | opinion           = [[File:Opinion.png|{{{width|22px}}}|link=]]
+   | war               = [[File:War.png|{{{width|22px}}}|link=]]
+   | exclusivem        = [[File:Mutually exclusive.png|{{{width|22px}}}|link=]]
+   | manpower          = [[File:Manpower.png|{{{width|22px}}}|link=]]
+   | stability         = [[File:Stability.png|{{{width|22px}}}|link=]]
+   | war support       = [[File:War support.png|{{{width|22px}}}|link=]]
+   | #default          = &lt;span class="pdx-icon-missing"&gt;&lt;/span&gt;
+   }}
+ }}{{#if:{{{2|}}}|&amp;nbsp;{{{2}}}}}&lt;/includeonly&gt;
+</pre>
+
+=== Why <code>#default</code> is empty ===
+An unrecognised code renders nothing visible rather than a red link or a broken
+image. Add <code>[[Category:Pages with unrecognised icon codes]]</code> to the
+<code>#default</code> branch while you are filling the switch out, then remove
+it once the tracking category is empty — that turns the gap into a worklist
+instead of scattered breakage.
+
+=== Extending the switch ===
+Every icon code pdxparse can emit is a string literal in the parser source. To
+list them all:
+
+<pre>
+grep -rhoP '\{\{icon\|[^}|]+' src/ | sed 's/{{icon|//' | sort -u
+</pre>
+
+Add a row per code that the wiki has a file for; leave the rest to
+<code>#default</code>.
+[[Category:Pdxparse templates]]

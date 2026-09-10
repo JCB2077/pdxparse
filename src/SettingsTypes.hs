@@ -285,6 +285,12 @@ data Settings = Settings {
     ,   languageS   :: String   -- ^ Output language code, as String for easy
                                 --   manipulation of FilePaths.
     ,   gameVersion :: Text     -- ^ Version of the game (e.g. \"1.22\")
+    ,   focusBoxTemplate :: Text -- ^ Name of the wiki template used to render the
+                                 --   icon/name/description box for national
+                                 --   focuses. Defaults to @iconbox@, which is what
+                                 --   the Paradox wikis use; mod wikis that already
+                                 --   use @Iconbox@ for something else can point
+                                 --   this at their own template instead.
     ,   gameInterface :: HashMap Text Text     -- ^ Image name hashmap for pairing imagecodenames to actual imagenames
     ,   gameL10n    :: L10n     -- ^ Game localization table. See "Yaml" for
                                 --   the definition of this type.

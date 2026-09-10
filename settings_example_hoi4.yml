@@ -46,4 +46,16 @@ settings:
 
     # The name of the mod you're trying to parse eg. "Kaiserreich"
     # currently only supported for HOI4
+    #mod_name:    # currently only supported for HOI4
     #mod_name:
+    # Name of the wiki template used to render the icon + name + description box
+    # at the head of each national focus row. Defaults to "iconbox", which is what
+    # hoi4.paradoxwikis.com uses.
+    #
+    # Several mod wikis already use "Iconbox" for something else - on
+    # oldworldblues.wiki.gg and equestriaatwar.wiki.gg it is an achievements
+    # template that derives its image from the achievement name and ignores
+    # image=, so focus icons come out broken - and tno.wiki.gg has no Iconbox at
+    # all. On those wikis, install the Focusbox template shipped in
+    # wiki-templates/ and point this setting at it.
+    #focus_box_template: "Focusbox"

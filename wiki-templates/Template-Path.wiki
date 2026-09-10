@@ -1,0 +1,12 @@
+<includeonly><code class="pdx-path">{{{1|}}}</code></includeonly><noinclude>
+== Purpose ==
+Formats a game or mod file path. '''pdxparse''' uses it in the
+<code><nowiki><noinclude></nowiki></code> footer of generated templates to record
+which script files a page was built from, e.g.
+
+<pre>
+Automatically generated from the file(s): {{path|common/opinion_modifiers/00_opinion_modifiers.txt}}
+</pre>
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

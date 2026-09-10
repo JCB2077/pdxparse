@@ -1,0 +1,11 @@
+<includeonly><span class="pdx-good" style="color:#1a7f37;">{{{1|}}}</span></includeonly><noinclude>
+== Purpose ==
+Marks a numerically ''good'' value. '''pdxparse''' applies it automatically to
+positive modifiers via <code>MessageTools.colourNum</code>. See {{tl|red}} for
+the opposite.
+
+<code>#1a7f37</code> is used rather than <code>green</code> so the text clears
+WCAG AA contrast on the default white background.
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

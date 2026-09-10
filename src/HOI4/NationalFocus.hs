@@ -40,11 +40,25 @@ import SettingsTypes ( PPT, Settings (..)
                      , indentUp
                      , getGameInterface, getGameInterfaceIfPresent)
 import HOI4.Common -- everything
+import HOI4.Handlers (flagText)
+import MessageTools (formatDays)
+
+-- | The number of days a single focus point takes to complete. HOI4 spends one
+-- focus \"point\" per week, so a focus with @cost = 10@ takes 70 days.
+focusPointDays :: Double
+focusPointDays = 7
+
+-- | Cost a focus is given by the game when the script does not specify one.
+-- This used to be 'undefined', which was only safe because nothing read the
+-- field; rendering the completion time would have made every focus without an
+-- explicit @cost@ crash the writer.
+defaultFocusCost :: Double
+defaultFocusCost = 10
 
 -- | Empty national focus. Starts off Nothing/empty everywhere, except id and name
 -- (which should get filled in immediately).
 newHOI4NationalFocus :: HOI4NationalFocus
-newHOI4NationalFocus = HOI4NationalFocus "(Unknown)" "(Unknown)" Nothing Nothing "GFX_goal_unknown" Nothing undefined Nothing [] Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing undefined
+newHOI4NationalFocus = HOI4NationalFocus "(Unknown)" "(Unknown)" Nothing Nothing "GFX_goal_unknown" Nothing defaultFocusCost Nothing [] Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing undefined
 
 -- | Take the decisions scripts from game data and parse them into decision
 -- data structures.
@@ -204,14 +218,17 @@ nationalFocusAddSection nf stmt
                     nf
                 CompoundRhs scr -> nf { nf_joint_trigger = Just scr }
                 _-> trace "bad nf joint trigger" nf
-            "cancel" -> nf
-            "cancelable" -> nf --bool
+            "cancel" -> case rhs of
+                CompoundRhs [] -> nf
+                CompoundRhs scr -> nf { nf_cancel = Just scr }
+                _-> trace "bad nf cancel" nf
+            "cancelable" -> nf { nf_cancelable = boolRhsText rhs } --bool
             "historical_ai" -> nf
-            "available_if_capitulated" -> nf --bool
-            "cancel_if_invalid" -> nf --bool
-            "continue_if_invalid" -> nf --bool
-            "will_lead_to_war_with" ->  nf
-            "search_filters" -> nf
+            "available_if_capitulated" -> nf { nf_available_if_capitulated = boolRhsText rhs } --bool
+            "cancel_if_invalid" -> nf { nf_cancel_if_invalid = boolRhsText rhs } --bool
+            "continue_if_invalid" -> nf { nf_continue_if_invalid = boolRhsText rhs } --bool
+            "will_lead_to_war_with" -> nf { nf_will_lead_to_war_with = tagListRhsText rhs }
+            "search_filters" -> nf { nf_search_filters = tagListRhsText rhs }
             "select_effect" -> case rhs of
                 CompoundRhs [] ->
                     nf
@@ -230,6 +247,28 @@ nationalFocusAddSection nf stmt
             other -> trace ("unknown national focus section: " ++ show other ++ " for " ++ show stmt) nf
         nationalFocusAddSection' nf _
             = trace "unrecognised form for national focus section" nf
+
+-- | Read a @yes@\/@no@ right-hand side into a 'Maybe' 'Text'. Anything that
+-- isn't a recognised boolean is dropped, so callers can safely treat a
+-- 'Just' as meaning \"the script said something about this\".
+boolRhsText :: GenericRhs -> Maybe Text
+boolRhsText (GenericRhs "yes" []) = Just "yes"
+boolRhsText (GenericRhs "no" [])  = Just "no"
+boolRhsText _ = Nothing
+
+-- | Read either @key = TAG@ or @key = { TAG TAG ... }@ into a single
+-- space-separated 'Text'. Used for @will_lead_to_war_with@ and
+-- @search_filters@, both of which the game accepts in either form.
+tagListRhsText :: GenericRhs -> Maybe Text
+tagListRhsText (GenericRhs txt []) = Just txt
+tagListRhsText (StringRhs txt) = Just txt
+tagListRhsText (CompoundRhs scr) = case mapMaybe bareTag scr of
+    [] -> Nothing
+    tags -> Just (T.intercalate " " tags)
+    where
+        bareTag (StatementBare (GenericLhs t [])) = Just t
+        bareTag _ = Nothing
+tagListRhsText _ = Nothing
 
 
 
@@ -303,6 +342,7 @@ ppNationalFocuses nfs = do
 
 ppNationalFocus :: forall g m. (HOI4Info g, Monad m) => HOI4NationalFocus -> PPT g m Doc
 ppNationalFocus nf = setCurrentFile (nf_path nf) $ do
+    boxTemplate <- gets (focusBoxTemplate . getSettings)
     let nfArg :: (HOI4NationalFocus -> Maybe a) -> (a -> PPT g m Doc) -> PPT g m [Doc]
         nfArg field fmt
             = maybe (return [])
@@ -338,10 +378,15 @@ ppNationalFocus nf = setCurrentFile (nf_path nf) $ do
         case micon of
             Nothing -> getGameInterface "goal_unknown" (nf_icon nf)
             Just idicon -> return idicon
-    alt_icon_pp <- do
-        case nf_alt_icon nf of
-            Nothing -> return ""
-            Just idicon -> return " <!-- ALT icon presentt, check script -->"
+    alt_icon_pp <- case nf_alt_icon nf of
+        Nothing -> return mempty
+        Just "Multiple Pictures possible, check script." ->
+            return " <!-- alternate_icon is scripted, check the source file -->"
+        Just idicon -> do
+            alticon <- getGameInterface "goal_unknown" idicon
+            return $ mconcat
+                [ " <small>(alternate icon: [[File:", alticon, ".png|28px|link=]])</small>"
+                , " <!-- alternate_icon = ", idicon, " -->" ]
     prerequisite_pp <- ppPrereq $ catMaybes $ nf_prerequisite nf
     allowBranch_pp <- ppAllowBranch $ nf_allow_branch nf
     mutuallyExclusive_pp <- ppMutuallyExclusive $ nf_mutually_exclusive nf
@@ -349,23 +394,44 @@ ppNationalFocus nf = setCurrentFile (nf_path nf) $ do
     joint_trigger_pp <- nfArgClari "<!-- joint_trigger -->Requirements for joint rewards:" nf_joint_trigger ppScript
     joint_reward_member_pp <- nfArgClari "Reward for joint member:" nf_joint_complete_member ppScript
     joint_reward_origin_pp <- nfArgClari "Reward for joint country that completed:" nf_joint_complete_origin ppScript
-    complete_tool_pp <- nfArgClari "<!-- Tooltip shown for completion ->Completion tooltip:" nf_complete_tooltip ppScript
+    complete_tool_pp <- nfArgClari "<!-- Tooltip shown for completion -->Completion tooltip:" nf_complete_tooltip ppScript
+    war_pp <- case nf_will_lead_to_war_with nf of
+        Nothing -> return []
+        Just tags -> do
+            flags <- mapM (flagText (Just HOI4Country)) (T.words tags)
+            return [ "* {{icon|war}} Will lead to war with "
+                   , Doc.strictText (T.intercalate ", " flags), PP.line ]
+    let cost_pp =
+            [ "{{icon|time}} ", Doc.strictText (formatDays (nf_cost nf * focusPointDays))
+            , PP.line ]
+        capitulated_pp = case nf_available_if_capitulated nf of
+            Just "yes" -> [ "* Can be completed while capitulated", PP.line ]
+            _ -> []
+        filters_pp = case nf_search_filters nf of
+            Just filters ->
+                [ "<!-- search_filters: ", Doc.strictText filters, " -->", PP.line ]
+            _ -> []
     bypass_pp <- nfArgExtra "bypass" nf_bypass ppScript
     completionReward_pp <- setIsInEffect True $ nfArg nf_completion_reward ppScript
     selectEffect_pp <- setIsInEffect True $ nfArgExtra "select" nf_select_effect ppScript
     return . mconcat $
         [ "|- id = \"", Doc.strictText (nf_name_loc nf),"\"" , PP.line
-        , "| {{iconbox|image=", Doc.strictText icon_pp, ".png ", PP.line
+        , "| <span id=\"", Doc.strictText (nf_id nf), "\"></span>{{", Doc.strictText boxTemplate
+        , "|image=", Doc.strictText icon_pp, ".png ", PP.line
         , "| ", Doc.strictText (nf_name_loc nf) , "<!-- ", Doc.strictText (nf_id nf), " -->", PP.line
-        , "| ",maybe mempty (Doc.strictText . Doc.nl2br) (nf_name_desc nf), PP.line , "}}", Doc.strictText alt_icon_pp, PP.line
-        , "| ", PP.line]++
+        , "| ",maybe mempty (Doc.strictText . Doc.nl2br) (nf_name_desc nf), PP.line , "}}", Doc.strictText alt_icon_pp, PP.line]++
+        cost_pp ++
+        filters_pp ++
+        [ "| ", PP.line]++
         allowBranch_pp ++
         prerequisite_pp ++
         mutuallyExclusive_pp ++
         available_pp ++
+        capitulated_pp ++
         joint_trigger_pp ++
         bypass_pp ++
         [ "| ", PP.line]++
+        war_pp ++
         completionReward_pp ++
         joint_reward_origin_pp ++
         joint_reward_member_pp ++

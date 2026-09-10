@@ -1,0 +1,19 @@
+<includeonly><span class="pdx-hover" style="border-bottom:1px dotted; cursor:help;" title="{{{2|}}}">{{{1|}}}</span></includeonly><noinclude>
+== Purpose ==
+Shows the first parameter, with the second as a tooltip. '''pdxparse''' uses it
+where the game shows a short phrase whose full condition is too long for the
+table cell, e.g. <code><nowiki>{{hover|Has had the focus|<long trigger text>}}</nowiki></code>.
+
+== Usage ==
+<pre>
+{{hover|visible text|tooltip text}}
+</pre>
+
+== Accessibility note ==
+A <code>title</code> tooltip is invisible to touch devices and to most screen
+readers. Where the hidden text is essential rather than supplementary, prefer
+putting it in the cell directly. pdxparse only uses this template for
+supplementary detail.
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

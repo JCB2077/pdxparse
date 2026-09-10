@@ -1,0 +1,8 @@
+<includeonly><span class="pdx-bad" style="color:#cf222e;">{{{1|}}}</span></includeonly><noinclude>
+== Purpose ==
+Marks a numerically ''bad'' value. '''pdxparse''' applies it automatically to
+negative modifiers via <code>MessageTools.colourNum</code>. See {{tl|green}} for
+the opposite.
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

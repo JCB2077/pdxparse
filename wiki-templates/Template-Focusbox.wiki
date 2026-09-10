@@ -1,0 +1,40 @@
+<includeonly><div class="pdx-focusbox" style="display:flex; gap:0.6em; align-items:flex-start;">{{#if:{{{image|}}}|<div class="pdx-focusbox-icon">[[File:{{{image}}}|{{{size|64px}}}|link=]]</div>}}<div class="pdx-focusbox-text"><div class="pdx-focusbox-name" style="font-weight:bold;">{{{1|}}}</div>{{#if:{{{2|}}}|<div class="pdx-focusbox-desc" style="font-size:92%;">{{{2}}}</div>}}</div></div></includeonly><noinclude>
+{{Documentation}}
+== Purpose ==
+Icon-plus-name-plus-description box used by '''pdxparse''' output for national
+focuses, ideas and national spirits.
+
+This template exists because <code>{{tl|Iconbox}}</code> is already taken on
+several Hearts of Iron IV mod wikis (Old World Blues and Equestria at War both
+use it for achievement lists, where the icon is derived from the achievement
+name and an <code>image=</code> parameter is ignored). Installing the Paradox
+wiki version of <code>Iconbox</code> over those would break existing pages, so
+pdxparse output targets this separate name instead.
+
+== Usage ==
+<pre>
+{{Focusbox|image=GFX_focus_generic_war.png
+| Prepare for War
+| Our armies must be ready for what is to come.
+}}
+</pre>
+
+=== Parameters ===
+{| class="wikitable"
+! Parameter !! Required !! Description
+|-
+| <code>image</code> || no || File name of the focus icon, ''including'' the extension. Omitted entirely if the icon is unknown.
+|-
+| <code>1</code> || yes || Localised focus name.
+|-
+| <code>2</code> || no || Localised focus description.
+|-
+| <code>size</code> || no || Icon width. Defaults to <code>64px</code>.
+|}
+
+== Notes ==
+* Degrades gracefully: with no <code>image</code> it renders name and description only, so a missing icon file never leaves a broken-image box in a table cell.
+* Uses flexbox rather than a table so it reflows on narrow screens and inside <code>class="mildtable"</code> cells.
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

@@ -1,0 +1,21 @@
+<includeonly>cellspacing="2" cellpadding="5"</includeonly><noinclude>
+== Purpose ==
+Table attribute snippet used by '''pdxparse''' output. It is transcluded
+''inside'' a wikitable's opening line, not as ordinary content:
+
+<pre>
+{| class="mildtable" {{buffer}}
+</pre>
+
+which expands to
+
+<pre>
+{| class="mildtable" cellspacing="2" cellpadding="5"
+</pre>
+
+== Notes ==
+* There must be no newline or category link inside <code><nowiki><includeonly></nowiki></code>, or the table opening line will break.
+* If the wiki styles table padding through <code>MediaWiki:Common.css</code> instead, this template can be left empty rather than deleted; pdxparse output still transcludes it and an empty expansion is harmless.
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

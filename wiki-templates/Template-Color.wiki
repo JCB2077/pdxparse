@@ -1,0 +1,26 @@
+<includeonly><span style="color:{{{1|inherit}}};">{{{2|}}}</span></includeonly><noinclude>
+== Purpose ==
+Colours a run of text. '''pdxparse''' emits <code><nowiki>{{color|green|...}}</nowiki></code>,
+<code><nowiki>{{color|red|...}}</nowiki></code> and <code><nowiki>{{color|yellow|...}}</nowiki></code>
+when the game script itself specifies a colour.
+
+== Usage ==
+<pre>
+{{color|green|+10 stability}}
+</pre>
+
+== Contrast ==
+Bare <code>yellow</code> and <code>green</code> fail contrast checks on a white
+background. Prefer mapping the common names to darker shades:
+
+<pre>
+&lt;includeonly&gt;&lt;span style="color:{{#switch:{{lc:{{{1|}}}}}
+ | green  = #1a7f37
+ | red    = #cf222e
+ | yellow = #9a6700
+ | #default = {{{1|inherit}}}
+}};"&gt;{{{2|}}}&lt;/span&gt;&lt;/includeonly&gt;
+</pre>
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

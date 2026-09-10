@@ -1,0 +1,23 @@
+<includeonly><div class="pdx-version" style="float:right; margin:0 0 0.5em 0.5em; padding:0.2em 0.6em; border:1px solid #a2a9b1; background:#f8f9fa; font-size:90%;">{{#if:{{{2|}}}|{{{2}}}|Version}}&nbsp;'''{{{1|?}}}'''</div></includeonly><noinclude>
+== Purpose ==
+Marks which game or mod version a generated page was produced from. Every
+'''pdxparse''' output file begins with this template, filled in from the
+<code>version:</code> field in <code>settings.yml</code>.
+
+== Usage ==
+<pre>
+{{Version|1.16}}
+{{Version|3.4.1|Mod version}}
+</pre>
+
+=== Parameters ===
+{| class="wikitable"
+! Parameter !! Required !! Description
+|-
+| <code>1</code> || yes || The version string.
+|-
+| <code>2</code> || no || Label shown before the version. Defaults to <code>Version</code>. Useful on mod wikis, where the meaningful number is the mod's, not the base game's.
+|}
+[[Category:Templates]]
+[[Category:Pdxparse templates]]
+</noinclude>

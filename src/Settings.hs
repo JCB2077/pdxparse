@@ -51,6 +51,7 @@ data SettingsInput = SettingsInput {
     ,   gameVersionI :: String
     ,   modNameI     :: Maybe String
     ,   modDirI      :: Maybe FilePath
+    ,   focusBoxTemplateI :: Maybe String
     } deriving (Show)
 -- Settings is defined in SettingsTypes
 
@@ -67,6 +68,7 @@ instance FromJSON SettingsInput where
                             <*> fmap T.unpack (o' .: "version")
                             <*> fmap (fmap T.unpack) (o' .:? "mod_name")
                             <*> fmap (fmap T.unpack) (o' .:? "mod_path")
+                            <*> fmap (fmap T.unpack) (o' .:? "focus_box_template")
             _ -> fail "bad settings file"
     parseJSON _ = fail "bad settings file"
 
@@ -200,6 +202,7 @@ readSettings = do
                             , languageFolder = langFolder
                             , languageS = "l_" <> T.unpack lang
                             , gameVersion = T.pack (gameVersionI settingsIn)
+                            , focusBoxTemplate = maybe "iconbox" T.pack (focusBoxTemplateI settingsIn)
                             , gameInterface = HM.empty -- filled in later
                             , gameL10n = HM.empty -- filled in later
                             , gameL10nKeys = [] -- filled in later

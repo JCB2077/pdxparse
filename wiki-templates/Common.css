@@ -1,0 +1,85 @@
+/* ---------------------------------------------------------------------------
+ * Styles for pdxparse-generated pages.
+ * Append to MediaWiki:Common.css.
+ * ------------------------------------------------------------------------ */
+
+/* The table class every pdxparse table opens with. Without this rule the
+ * generated tables render unstyled, which is the usual reason output "looks
+ * broken" on a wiki that has never hosted parser output before. */
+table.mildtable {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5em 0;
+    background: var(--pdx-table-bg, #ffffff);
+}
+
+table.mildtable > * > tr > th {
+    background: var(--pdx-table-head-bg, #eaecf0);
+    border: 1px solid var(--pdx-table-border, #a2a9b1);
+    padding: 0.4em 0.6em;
+    text-align: left;
+    vertical-align: bottom;
+}
+
+table.mildtable > * > tr > td {
+    border: 1px solid var(--pdx-table-border, #c8ccd1);
+    padding: 0.4em 0.6em;
+    vertical-align: top;
+}
+
+/* Zebra striping. Rows carry an id= anchor, so :nth-child is the only handle. */
+table.mildtable > * > tr:nth-child(even) > td {
+    background: var(--pdx-table-alt-bg, #f8f9fa);
+}
+
+/* Focus and idea boxes. */
+.pdx-focusbox {
+    display: flex;
+    gap: 0.6em;
+    align-items: flex-start;
+}
+
+.pdx-focusbox-name {
+    font-weight: bold;
+}
+
+.pdx-focusbox-desc {
+    font-size: 92%;
+    opacity: 0.85;
+}
+
+/* Good/bad numbers. Darker than the CSS keywords so they clear WCAG AA on
+ * white; both also stay legible on the dark skins wiki.gg offers. */
+.pdx-good { color: #1a7f37; }
+.pdx-bad  { color: #cf222e; }
+
+.pdx-path {
+    font-family: monospace, monospace;
+    font-size: 92%;
+}
+
+/* Rows are anchor targets from focus-tree pages; without scroll-margin the
+ * sticky header hides the row you just jumped to. */
+table.mildtable > * > tr[id] {
+    scroll-margin-top: 4em;
+}
+
+/* Narrow screens: let the three-column focus tables scroll rather than
+ * squeezing the effects column to unreadable width. */
+@media screen and (max-width: 720px) {
+    table.mildtable {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --pdx-table-bg: transparent;
+        --pdx-table-head-bg: #27292d;
+        --pdx-table-border: #54595d;
+        --pdx-table-alt-bg: #202122;
+    }
+    .pdx-good { color: #4ac26b; }
+    .pdx-bad  { color: #ff7b72; }
+}
